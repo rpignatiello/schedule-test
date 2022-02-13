@@ -5,114 +5,120 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
-import time
 
-username = ''
-password = ''
-firstname = ''
-phone = '' #xxxxxxxxxx
-birthMonth = '' #xx
-birthDay = '' #xx
-birthYear = '' #xxxx
+netId = r'NETID'
+password = r'PASSWORD'
+firstName = r'FIRSTNAME'
+lastName = r'LASTNAME'
+phone = r'PHONENUMBER' #xxxxxxxxxx
+birthMonth = r'MONTH' #xx
+birthDay = r'DAY' #xx
+birthYear = r'YEAR' #xxxx
 
 
 driver = webdriver.Chrome()
 driver.get('https://dailycheck.cornell.edu/login')
 
-assert "Daily" in driver.title
-
 actions = ActionChains(driver)
 
-loginButton = driver.find_element_by_xpath('//*[@id="main-article"]/div[2]/div/div/a[1]')
-loginButton.click()
+""" Find and click a button using xpath (NOT used for next button) """
+def clickButton(xpath):
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
+    button= driver.find_element_by_xpath(xpath)
+    actions.move_to_element(button).perform()
+    button.click()
 
-username = driver.find_element_by_id('username')
-username.send_keys(username)
+""" Find input by xpath and fill it with information """
+def sendText(xpath, text):
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
+    input= driver.find_element_by_xpath(xpath)
+    actions.move_to_element(input).perform()
+    input.send_keys('', text)
 
-password = driver.find_element_by_id('password')
-password.send_keys(password)
+""" Find and click next button on cayugahealth.org """
+def nextButton():
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'nextButton')))
+    nextButton = driver.find_element_by_id('nextButton')
+    actions.move_to_element(nextButton).perform()
+    nextButton.click()
 
-loginButton = driver.find_element_by_xpath('//*[@id="login"]/fieldset/div/div[1]/input')
-loginButton.click()
+""" Find dropdown button and click """
+def dropDownOpen(id):
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, id)))
+    button= driver.execute_script('return document.getElementById("' + id + '").shadowRoot.querySelector("button")')
+    actions.move_to_element(button).perform()
+    button.click()
 
-#scheduleTest = driver.find_element_by_xpath('//*[@id="main-article"]/div[2]/div/p/a')
-#scheduleTest.click()
+""" Find dropdown selection and click """
+def dropDownSelect(xpath, js):
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath)))
+    selection= driver.execute_script(js)
+    selection.click()
 
-scheduleTest = driver.find_element_by_xpath('//*[@id="main-article"]/div[2]/div[4]/div/div/p[3]/a')
-actions.move_to_element(scheduleTest).perform()
-scheduleTest.click()
+""" Fills in information for users who have previously registered """
+def fillPrevInfo(firstname, phone, birthMonth, birthDay, birthYear):
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '/html/body/app-root/ion-app/ion-router-outlet/app-patient-registration/ion-content/div/div/div[2]/form/div[1]/div/span[2]/span/ion-item[1]/ion-input/input')))
+    firstNameInput = driver.find_element_by_xpath('/html/body/app-root/ion-app/ion-router-outlet/app-patient-registration/ion-content/div/div/div[2]/form/div[1]/div/span[2]/span/ion-item[1]/ion-input/input')
+    firstNameInput.send_keys(firstname)
+    actions.send_keys(Keys.TAB).perform()
+    actions.send_keys(phone).perform()
+    actions.send_keys(Keys.TAB).perform()
+    actions.send_keys(birthMonth).perform()
+    actions.send_keys(birthDay).perform()
+    actions.send_keys(birthYear).perform()
 
-WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'nextButton')))
-nextButton = driver.find_element_by_id('nextButton')
-actions.move_to_element(nextButton).perform()
-nextButton.click()
+#Login Button (Cornell NetId login only)
+clickButton('/html/body/div[2]/main/div/article/div/div/div/a[1]')
 
-#CLICK REGISTERED BEFORE
-#SHADOW ROOT
-WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'previously-regd-dd')))
-#shadowRoot = driver.execute_script('return document.querySelector("previously-regd-dd").shadowRoot')
-#shadowRoot.find_element_by_css('.button').click()
-#time.sleep(3)
-registeredBefore = driver.execute_script('return document.getElementById("previously-regd-dd").shadowRoot.querySelector("button")')
-registeredBefore.click()
+#Net Id input is filled
+sendText('/html/body/div[2]/main/article/div/div[1]/form/fieldset/input[1]', netId)
+#Password input is filled
+sendText('/html/body/div[2]/main/article/div/div[1]/form/fieldset/input[2]', password)
+#Finished Cornell NetId loginButton
+clickButton('/html/body/div[2]/main/article/div/div[1]/form/fieldset/div/div[1]/input')
 
-WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '/html/body/app-root/ion-app/ion-popover/div/div[2]/ion-select-popover/ion-list/ion-radio-group/ion-item[2]/ion-radio')))
-#yesButton = driver.find_element_by_xpath('/html/body/app-root/ion-app/ion-popover/div/div[2]/ion-select-popover/ion-list/ion-radio-group/ion-item[2]/ion-radio')
-#yesButton1 = yesButton.find_element_by_xpath('/html/body/app-root/ion-app/ion-popover/div/div[2]/ion-select-popover/ion-list/ion-radio-group/ion-item[2]/ion-radio//button')
-yesButton = driver.execute_script('return document.getElementsByClassName("sc-ion-select-popover-md md in-item interactive hydrated")[1].shadowRoot.querySelector("button")')
-yesButton.click()
+#Click on link in banner to go to scheduling site
+#clickButton('/html/body/div[2]/main/article/div/div[1]/form/fieldset/input[1]')
 
-WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '/html/body/app-root/ion-app/ion-router-outlet/app-patient-registration/ion-content/div/div/div[2]/form/div[1]/div/span[2]/span/ion-item[1]/ion-input/input')))
-firstNameInput = driver.find_element_by_xpath('/html/body/app-root/ion-app/ion-router-outlet/app-patient-registration/ion-content/div/div/div[2]/form/div[1]/div/span[2]/span/ion-item[1]/ion-input/input')
-firstNameInput.send_keys(firstname)
-actions.send_keys(Keys.TAB).perform()
-actions.send_keys(phone).perform()
-actions.send_keys(Keys.TAB).perform()
-actions.send_keys(birthMonth).perform()
-actions.send_keys(birthDay).perform()
-actions.send_keys(birthYear).perform()
+#Click on supplemental test link (Used mainly for debugging purposes)
+clickButton('/html/body/div[2]/main/div/article/div/div[4]/div/div/p[3]/a')
 
-#CAPTCHA MIGHT NEED TO BE DONE BY USER
+#Webpage should be cayugahealth.org
+assert 'Patient Registration' in driver.title
+
+nextButton()
+
+#Select yes for having already filled out the application
+dropDownOpen('previously-regd-dd')
+dropDownSelect('/html/body/app-root/ion-app/ion-popover/div/div[2]/ion-select-popover/ion-list/ion-radio-group/ion-item[2]/ion-radio', 'return document.getElementsByClassName("sc-ion-select-popover-md md in-item interactive hydrated")[1].shadowRoot.querySelector("button")')
+
+#Fill out name, phone number, and birthday
+fillPrevInfo(firstName, phone, birthMonth, birthDay, birthYear)
+
+#Completes the Capthca
 WebDriverWait(driver, 10).until(EC.frame_to_be_available_and_switch_to_it((By.CSS_SELECTOR,"iframe[name^='a-'][src^='https://www.google.com/recaptcha/api2/anchor?']")))
-
 try:
     WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//span[@class='recaptcha-checkbox goog-inline-block recaptcha-checkbox-unchecked rc-anchor-checkbox']/div[@class='recaptcha-checkbox-checkmark']")))
     reCaptcha = driver.find_element_by_xpath('//span[@class="recaptcha-checkbox goog-inline-block recaptcha-checkbox-unchecked rc-anchor-checkbox"]/div[@class="recaptcha-checkbox-checkmark"]')
     driver.execute_script('arguments[0].click()', reCaptcha)
-    until(EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div[3]/div[1]/div/div/span/div[4]')))
-    print('try')
 except:
-    print('captcha needs to be done by user')
-    WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div[3]/div[1]/div/div/span/div[4]')))
-    print('except')
+    input('press Enter to continue')
 
-#WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '/html/body/div[2]/div[3]/div[1]/div/div/span/div[4]')))
-print('done w try except')
 driver.switch_to.parent_frame()
-WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'nextButton')))
-nextButton = driver.find_element_by_id('nextButton')
-time.sleep(.5)
-WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'nextButton')))
-time.sleep(.5)
-nextButton.click()
+nextButton()
+nextButton()
 
-WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'nextButton')))
-nextButton = driver.find_element_by_id('nextButton')
-WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.ID, 'nextButton')))
-nextButton.click()
-#registeredBefore = driver.find_element_by_xpath('/html/body/app-root/ion-app/ion-router-outlet/app-patient-registration/ion-content/div/div/div[2]/form/div[1]/div/span/ion-item/ion-select//button')
-#registeredBefore.click()
+#Sign legal document
+dropDownOpen('agreed-to-policy-chk')
+sendText('/html/body/app-root/ion-app/ion-router-outlet/app-patient-registration/ion-content/div/div/div[2]/form/div[1]/div/ion-item[2]/ion-input/input', firstName + ' ' + lastName)
+nextButton()
 
+#WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'location-dd')))
+#locationDropDown =  driver.execute_script('return document.getElementById("location-dd").shadowRoot.querySelector("button")')
+#locationDropDown.click()
 
+#time.sleep(.2)
 
-#WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, 'nextButton')))
-#nextButton = driver.find_element_by_id('nextButton')
-#nextButton.click()
-
-#WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, 'html/body/app-root/ion-app/ion-router-outlet/app-patient-registration/ion-content/div/div/div[2]/form/div[1]/div/ion-item[3]/date-field/div/div[1]/ion-input/input')))
-#birthdayInput = driver.find_element_by_xpath('/html/body/app-root/ion-app/ion-router-outlet/app-patient-registration/ion-content/div/div/div[2]/form/div[1]/div/ion-item[3]/date-field/div/div[1]/ion-input/input')
-#birthdayInput.send_keys('12')
-#actions.send_keys('22').perform()
-#actions.send_keys('2001').perform()
-
-#CHANGE WHICH PART OF INPUT
+#WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '/html/body/app-root/ion-app/ion-popover/div/div[2]/ion-select-popover/ion-list/ion-radio-group/ion-item[6]/ion-radio')))
+#westCampus = driver.execute_script('return document.getElementsByClassName("sc-ion-select-popover-md md in-item interactive hydrated")[5].shadowRoot.querySelector("button")')
+#westCampus.click()
